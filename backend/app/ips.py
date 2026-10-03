@@ -19,12 +19,14 @@ ADMIN_TRANSITIONS = USER_TRANSITIONS | {("available", "reserved"), ("reserved", 
 IP_COLUMNS = """i.id, INET_NTOA(i.ip_address) AS ip, i.status, i.reserved_reason,
     i.room, i.equipment_id, i.equipment_name, i.cpu_serial, i.instrument_serial,
     i.user_name, i.remarks, i.assigned_at,
-    v.vlan_id, v.name AS vlan_name, v.location, v.department"""
+    v.vlan_id, v.name AS vlan_name, v.location,
+    COALESCE(i.department, v.department) AS department"""
 
 FROM_JOIN = "FROM ip_addresses i JOIN vlans v ON v.id = i.vlan_pk"
 
 
 class AssignIn(BaseModel):
+    department: Optional[str] = Field(None, max_length=100)
     room: Optional[str] = Field(None, max_length=50)
     equipment_id: str = Field(min_length=1, max_length=50)
     equipment_name: str = Field(min_length=1, max_length=100)
@@ -50,7 +52,7 @@ def get_ip_row(conn, ip_id: int) -> dict:
 
 
 def snapshot(row: dict) -> dict:
-    keys = ("ip", "status", "reserved_reason", "room", "equipment_id",
+    keys = ("ip", "status", "reserved_reason", "department", "room", "equipment_id",
             "equipment_name", "cpu_serial", "instrument_serial", "user_name", "remarks")
     return {k: row.get(k) for k in keys}
 
@@ -159,13 +161,13 @@ def assign_ip(ip_id: int, data: AssignIn, user: dict = Depends(get_current_user)
         result = conn.execute(
             text(
                 """UPDATE ip_addresses
-                   SET status = 'assigned', room = :room, equipment_id = :eq_id,
+                   SET status = 'assigned', department = :dept, room = :room, equipment_id = :eq_id,
                        equipment_name = :eq_name, cpu_serial = :cpu,
                        instrument_serial = :inst, user_name = :uname, remarks = :rem,
                        assigned_by = :uid, assigned_at = NOW()
                    WHERE id = :id AND status = 'available'"""
             ),
-            {"room": data.room, "eq_id": data.equipment_id, "eq_name": data.equipment_name,
+            {"dept": data.department, "room": data.room, "eq_id": data.equipment_id, "eq_name": data.equipment_name,
              "cpu": data.cpu_serial, "inst": data.instrument_serial,
              "uname": data.user_name, "rem": data.remarks,
              "uid": user["id"], "id": ip_id},
@@ -197,7 +199,7 @@ def release_ip(ip_id: int, user: dict = Depends(get_current_user)):
                 """UPDATE ip_addresses
                    SET status = 'available', room = NULL, equipment_id = NULL,
                        equipment_name = NULL, cpu_serial = NULL, instrument_serial = NULL,
-                       user_name = NULL, remarks = NULL, assigned_by = NULL, assigned_at = NULL
+                       user_name = NULL, remarks = NULL, department = NULL, assigned_by = NULL, assigned_at = NULL
                    WHERE id = :id AND status = :old_status"""
             ),
             {"id": ip_id, "old_status": old["status"]},

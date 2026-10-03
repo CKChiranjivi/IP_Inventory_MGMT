@@ -1,10 +1,13 @@
+import json
+
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 
 from .db import engine
-from .security import create_token, decode_token, verify_password
+from .security import create_token, decode_token, hash_password, verify_password
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -63,3 +66,32 @@ def login(form: OAuth2PasswordRequestForm = Depends()):
 @router.get("/me")
 def me(user: dict = Depends(get_current_user)):
     return user
+
+
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=64)
+
+
+@router.post("/change-password")
+def change_password(data: ChangePasswordIn, user: dict = Depends(get_current_user)):
+    # Wrong current password returns 400 (not 401) so the app does not log the user out.
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT password_hash FROM users WHERE id = :i"), {"i": user["id"]}
+        ).mappings().first()
+        if not row or not verify_password(data.current_password, row["password_hash"]):
+            raise HTTPException(status_code=400, detail="Current password is incorrect.")
+        if data.new_password == data.current_password:
+            raise HTTPException(status_code=400, detail="New password must be different from the current one.")
+        conn.execute(
+            text("UPDATE users SET password_hash = :h WHERE id = :i"),
+            {"h": hash_password(data.new_password), "i": user["id"]},
+        )
+        conn.execute(
+            text("""INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_value)
+                    VALUES (:u, 'USER_PASSWORD_CHANGE', 'user', :u, :v)"""),
+            {"u": user["id"], "v": json.dumps({"by": "self"})},
+        )
+        conn.commit()
+    return {"message": "Password changed."}

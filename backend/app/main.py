@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .audit import router as audit_router
 from .auth import router as auth_router
+from .dashboard import router as dashboard_router
+from .edit import router as edit_router
 from .ips import router as ips_router
 from .users import router as users_router
 from .vlans import router as vlans_router
@@ -21,6 +23,8 @@ app.include_router(users_router)
 app.include_router(vlans_router)
 app.include_router(ips_router)
 app.include_router(audit_router)
+app.include_router(edit_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/api/health")
