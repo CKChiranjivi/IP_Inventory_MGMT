@@ -19,6 +19,25 @@ async function api(path, method = 'GET', body) {
 
 const F = ({ label, ...p }) => <label className="f">{label}<input {...p} /></label>
 
+const NODES = [[90,120],[260,60],[430,170],[610,80],[790,190],[980,100],[1110,230],[160,330],[340,420],[540,330],[720,450],[900,360],[1080,480],[220,600],[470,590],[690,610],[930,600]]
+const EDGES = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[0,7],[7,8],[2,9],[8,9],[9,10],[4,11],[10,11],[11,12],[6,12],[8,13],[8,14],[10,15],[10,16],[14,15],[15,16],[9,4]]
+
+function NetBackground() {
+  return (
+    <svg className="net" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      {EDGES.map(([a, b], k) => (
+        <line key={k} x1={NODES[a][0]} y1={NODES[a][1]} x2={NODES[b][0]} y2={NODES[b][1]} style={{ animationDelay: `${(k % 6) * 0.7}s` }} />
+      ))}
+      {NODES.map(([x, y], k) => (
+        <g key={k}>
+          <circle cx={x} cy={y} r="14" className="halo" style={{ animationDelay: `${(k % 5) * 0.8}s` }} />
+          <circle cx={x} cy={y} r="4.5" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
 function Login({ onLogin }) {
   const [u, setU] = useState('')
   const [p, setP] = useState('')
@@ -33,13 +52,18 @@ function Login({ onLogin }) {
     onLogin(d.user)
   }
   return (
-    <form className="card login" onSubmit={submit}>
-      <h2>IP Inventory</h2>
-      <F label="Username" value={u} onChange={e => setU(e.target.value)} autoFocus />
-      <F label="Password" type="password" value={p} onChange={e => setP(e.target.value)} />
-      {err && <div className="err">{err}</div>}
-      <button type="submit">Login</button>
-    </form>
+    <div className="auth-page">
+      <NetBackground />
+      <form className="card login" onSubmit={submit}>
+        <Logo className="logo-lg" />
+        <h2>IP Inventory</h2>
+        <p className="sub">VLAN &amp; IP Address Management</p>
+        <F label="Username" value={u} onChange={e => setU(e.target.value)} autoFocus />
+        <F label="Password" type="password" value={p} onChange={e => setP(e.target.value)} />
+        {err && <div className="err">{err}</div>}
+        <button type="submit">Sign in</button>
+      </form>
+    </div>
   )
 }
 
@@ -363,15 +387,27 @@ function Dashboard() {
   )
 }
 
+const Logo = ({ className }) => (
+  <img src="/amn_logo.png" alt="" className={className} onError={e => { e.currentTarget.style.display = 'none' }} />
+)
+
+const Footer = () => (
+  <footer>
+    <div className="f1">&copy; 2026 IP Inventory Management System. All rights reserved.</div>
+    <div className="f2">Developed by <b>Mr. C.K. Chiranjivi</b><span>|</span>IT_EUS_TEAM_Pipan</div>
+  </footer>
+)
+
 export default function App() {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'))
   const [tab, setTab] = useState('dashboard')
   const [pw, setPw] = useState(false)
-  if (!user) return <Login onLogin={u => { localStorage.setItem('user', JSON.stringify(u)); setUser(u) }} />
+  if (!user) return <><Login onLogin={u => { localStorage.setItem('user', JSON.stringify(u)); setUser(u) }} /><Footer /></>
   const admin = user.role === 'admin'
   return (
     <>
       <header>
+        <Logo className="logo" />
         <b>IP Inventory</b>
         <nav>
           <button className={tab === 'dashboard' ? 'on' : ''} onClick={() => setTab('dashboard')}>Dashboard</button>
@@ -384,6 +420,7 @@ export default function App() {
       </header>
       <main>{tab === 'dashboard' ? <Dashboard /> : tab === 'audit' && admin ? <AuditPage /> : tab === 'users' && admin ? <UsersPage me={user} /> : tab === 'vlans' && admin ? <VlanPage /> : <IpPage />}</main>
       {pw && <ChangePassword onClose={() => setPw(false)} />}
+      <Footer />
     </>
   )
 }
