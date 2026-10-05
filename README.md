@@ -23,6 +23,35 @@ Built to replace spreadsheet-based IP tracking: no duplicate IPs, no overlapping
 - **CSV export** of the filtered IP list (opens in Excel).
 - **Single-server hosting.** One Uvicorn process serves both the API and the built React app, and runs as a Windows service.
 
+## Demo and screenshots
+
+### Demo video
+
+<!-- Option 1: on github.com, edit this file and drag your .mp4 here; GitHub inserts the player link automatically. -->
+<!-- Option 2: YouTube link with a thumbnail:
+[![Demo video](docs/images/demo-thumbnail.png)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+-->
+
+> Demo video coming soon.
+
+### Screenshots
+
+All screenshots use sample data only.
+
+| | |
+|---|---|
+| ![Screenshot 1](Screenshot%202026-10-05%20124242.png) | ![Screenshot 2](Screenshot%202026-10-05%20124438.png) |
+| ![Screenshot 3](Screenshot%202026-10-05%20124451.png) | ![Screenshot 4](Screenshot%202026-10-05%20124747.png) |
+| ![Screenshot 5](Screenshot%202026-10-05%20124801.png) | ![Screenshot 6](Screenshot%202026-10-05%20124821.png) |
+| ![Screenshot 7](Screenshot%202026-10-05%20124835.png) | ![Screenshot 8](Screenshot%202026-10-05%20124847.png) |
+| ![Screenshot 9](Screenshot%202026-10-05%20124859.png) | ![Screenshot 10](Screenshot%202026-10-05%20124907.png) |
+| ![Screenshot 11](Screenshot%202026-10-05%20125118.png) | ![Screenshot 12](Screenshot%202026-10-05%20125132.png) |
+| ![Screenshot 13](Screenshot%202026-10-05%20125206.png) | ![Screenshot 14](Screenshot%202026-10-05%20125217.png) |
+| ![Screenshot 15](Screenshot%202026-10-05%20125232.png) | ![Screenshot 16](Screenshot%202026-10-05%20125457.png) |
+| ![Screenshot 17](Screenshot%202026-10-05%20125506.png) | ![Screenshot 18](Screenshot%202026-10-05%20125612.png) |
+| ![Screenshot 19](Screenshot%202026-10-05%20125653.png) | ![Screenshot 20](Screenshot%202026-10-05%20125707.png) |
+| ![Screenshot 21](Screenshot%202026-10-05%20125717.png) |   |
+
 ## Tech stack
 
 | Layer | Technology |
@@ -146,14 +175,31 @@ For running as a Windows service, firewall setup, backups, moving data to a new 
 - The app serves plain HTTP. On a shared or untrusted network, put it behind an HTTPS reverse proxy.
 - The default `admin` account is created with a placeholder hash and cannot log in until you run `set_password.py`.
 
-## Roadmap
+## Future enhancements
 
-- Bulk import of existing IPs from Excel
-- VLAN deactivate/delete
-- Per-IP assignment history
-- Duplicate equipment / serial number warnings
-- Login attempt limiting
-- Email alerts for high VLAN utilization
+**Data and workflow**
+- Bulk import of existing IPs from Excel, with validation and a report of rejected rows
+- VLAN deactivate/delete (soft delete, blocked while IPs are assigned)
+- Per-IP assignment history (which equipment used the IP, and when)
+- Duplicate warnings for equipment ID, CPU S/N and instrument S/N
+- Ping / reachability check to find IPs marked available but actually in use
+
+**Reports and alerts**
+- Dashboard charts (utilization per VLAN, usage by department)
+- Printable reports and PDF export
+- Email alerts when a VLAN passes a utilization threshold (for example 90%)
+
+**Security and administration**
+- Login attempt limiting and automatic account lockout
+- Automatic logout after inactivity and a password strength policy
+- HTTPS through a reverse proxy
+- A read-only role for managers
+- Dedicated database user and encrypted secrets management
+
+**Platform**
+- Docker support for one-command deployment
+- Automated scheduled database backups with off-server copy
+- Automated tests and a CI pipeline
 
 ## Author
 
