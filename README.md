@@ -207,4 +207,4 @@ Developed by **Mr. C.K. Chiranjivi**, IT_EUS_TEAM_Pipan.
 
 ## License
 
-Add a `LICENSE` file before publishing (for example MIT), and update this section. If the project is internal to your organization, check your company's policy before making the repository public.
+Owner
