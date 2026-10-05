@@ -136,7 +136,8 @@ Open `http://localhost:8000` and log in as `admin`. Interactive API documentatio
 
 For development with hot reload, run `npm run dev` in `frontend` (it proxies `/api` to port 8000) and open `http://localhost:5173`.
 
-For running as a Windows service, firewall setup, backups, moving data to a new PC, and troubleshooting, see the **[full setup guide](docs/IP_Inventory_Setup_Guide.md)**.
+For running the application as a Windows service, configuring the firewall, performing backups, migrating data to a new PC, and troubleshooting common issues, see the **[Full Setup Guide](https://github.com/CKChiranjivi/IP_Inventory_MGMT/blob/main/IP_Inventory_Setup_Guide.pdf)**.
+
 
 ## Roles
 
